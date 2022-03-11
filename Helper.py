@@ -4,7 +4,7 @@
 Bandit environment
 Practical for course 'Reinforcement Learning',
 Bachelor AI, Leiden University, The Netherlands
-2021
+2022
 Template provided by: Thomas Moerland
 Implementation by: Josef Hamelink & Ayush Kandhai
 """
