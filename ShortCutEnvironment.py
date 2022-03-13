@@ -156,6 +156,10 @@ class ShortcutEnvironment(Environment):
     def render(self):
         s = self.s.copy()
         s[self.y, self.x] = 'p'
+        s = np.char.replace(s, 'X', '\033[0;47m \033[0m')
+        s = np.char.replace(s, 'C', '\033[0;40m \033[0m')
+        s = np.char.replace(s, 'G', '\033[0;42m \033[0m')
+        s = np.char.replace(s, 'p', '\033[0;44m \033[0m')
         print(s.tobytes().decode('utf-8'))
 
 class WindyShortcutEnvironment(Environment):
@@ -239,3 +243,23 @@ class WindyShortcutEnvironment(Environment):
         s = self.s.copy()
         s[self.y, self.x] = 'p'
         print(s.tobytes().decode('utf-8'))
+    
+
+def test():
+    env = ShortcutEnvironment()
+    validStep = True
+    step_nr = 0
+    print('starting position')
+    env.render()
+    while (validStep and not env.done()):
+        stateBefore = env.state()
+        env.step(1)                     # move one step down
+        step_nr += 1
+        print(f'step {step_nr}')
+        env.render()
+        stateAfter = env.state()
+        if stateAfter == stateBefore:   # agent moved into wall
+            validStep = False
+
+if __name__ == '__main__':
+    test()
