@@ -20,7 +20,7 @@ class QLearningAgent(object):
         self.n_states = n_states
         self.epsilon = epsilon
         self.Q = np.zeros(shape=(self.n_states, self.n_actions),dtype=np.float64)
-        self.N = np.zeros(shape=(self.n_states, self.n_actions),dtype=np.int8)
+        self.N = np.zeros(shape=(self.n_states, self.n_actions),dtype=np.int16)
         pass
         
     def select_action(self, state: int, epsilon: float) -> int:
@@ -33,10 +33,13 @@ class QLearningAgent(object):
                 probabilities[a] = (epsilon / (self.n_actions-1))   # assign equally divided remaining probability scores
         return np.random.choice(self.n_actions, p=probabilities)    # choose one action based on probabilities
         
-    def update(self, state, action, reward) -> None:
-        s, a, r = state, action, reward                             # for more concise notation
-        self.N[s][a] += 1                                           # increment number of times the action is taken by one
-        self.Q[s][a] += (1/self.N[s][a]) * (r - self.Q[s][a])       # update estimated mean reward for the action
+    def update(self, state, action, reward, alpha, next_state) -> None:
+        s, a, r, sp = state, action, reward, next_state                             # for more concise notation
+        self.Q[s][a] += alpha * (r + np.max(self.Q[sp]) - self.Q[s][a])                  # update estimated mean reward for the action
+        # print('was at state:', s, '\nc:', s%12, 'r:', s//12)
+        # print('  up  down  left  right')
+        # print(np.round(self.Q[s],2))
+        self.N[s][a] += 1
         return
 
 class SARSAAgent(object):

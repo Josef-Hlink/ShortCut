@@ -17,9 +17,9 @@ class LearningCurvePlot:
 
     def __init__(self,title=None):
         self.fig,self.ax = plt.subplots()
-        self.ax.set_xlabel('Timesteps')
-        self.ax.set_ylabel('Reward')
-        self.ax.set_ylim([0,1.0])
+        self.ax.set_xlabel('Episode')
+        self.ax.set_ylabel('Steps needed')
+        self.ax.set_ylim([0,1000])
         self.colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:cyan'] # color cycle
         if title is not None:
             self.ax.set_title(title)

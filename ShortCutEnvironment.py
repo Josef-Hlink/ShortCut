@@ -100,6 +100,7 @@ class ShortcutEnvironment(Environment):
     def reset(self):
         self.x = self.c//6
         rand_number = int(2*self.rng.random())
+        #rand_number = 1
         if rand_number:
             self.y = 5*self.r//6 - 1
         else:
@@ -132,16 +133,16 @@ class ShortcutEnvironment(Environment):
         
         if action == 0:
             if self.y>0:
-                self.y -= 1
+                self.y -= 1         # go up
         elif action == 1:
             if self.y<self.r-1:
-                self.y += 1
+                self.y += 1         # go down
         elif action == 2:
             if self.x>0:
-                self.x -= 1
+                self.x -= 1         # go left
         elif action == 3:
             if self.x<self.c-1:
-                self.x += 1
+                self.x += 1         # go right
         
         if self.s[self.y, self.x]=='G': # Goal reached
             self.isdone = True
