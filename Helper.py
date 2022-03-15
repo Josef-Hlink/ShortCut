@@ -18,13 +18,13 @@ class LearningCurvePlot:
     def __init__(self,title=None):
         self.fig,self.ax = plt.subplots()
         self.ax.set_xlabel('Episode')
-        self.ax.set_ylabel('Steps needed')
-        self.ax.set_ylim([0,1000])
+        self.ax.set_ylabel('Cumulative reward')
+        #self.ax.set_ylim([-5000,0])
         self.colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:cyan'] # color cycle
         if title is not None:
             self.ax.set_title(title)
         
-    def add_curve(self, y, color_index: int, label=None):
+    def add_curve(self, y, color_index: int=0, label=None):
         ''' y: vector of average reward results
         label: string to appear as label in plot legend '''
         if label is not None:
@@ -64,6 +64,11 @@ class ComparisonPlot:
         ''' name: string for filename of saved figure '''
         self.ax.legend()
         self.fig.savefig(name,dpi=300)
+
+# class PathPlot:
+#     def __init__(self):
+
+
 
 def smooth(y, window, poly=1):
     '''

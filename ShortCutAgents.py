@@ -36,6 +36,7 @@ class QLearningAgent(object):
     def update(self, state, action, reward, alpha, next_state) -> None:
         s, a, r, sp = state, action, reward, next_state                             # for more concise notation
         self.Q[s][a] += alpha * (r + np.max(self.Q[sp]) - self.Q[s][a])                  # update estimated mean reward for the action
+        
         # print('was at state:', s, '\nc:', s%12, 'r:', s//12)
         # print('  up  down  left  right')
         # print(np.round(self.Q[s],2))

@@ -100,7 +100,7 @@ class ShortcutEnvironment(Environment):
     def reset(self):
         self.x = self.c//6
         rand_number = int(2*self.rng.random())
-        #rand_number = 1
+        #rand_number = 0
         if rand_number:
             self.y = 5*self.r//6 - 1
         else:
