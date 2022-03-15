@@ -13,7 +13,18 @@ Implementation by: Josef Hamelink & Ayush Kandhai
 import random
 import numpy as np
 
-class QLearningAgent(object):
+class Agent(object):
+    """Parent class for type hinting (intellisense) purposes"""
+    def __init__(self, n_actions: int = 0, n_states: int = 0, epsilon: float = 0.0):
+        pass
+
+    def select_action(self, state: int = 0, epsilon: float = 0.0):
+        pass
+
+    def update(self, state, action, reward, alpha, next_state):
+        pass
+
+class QLearningAgent(Agent):
 
     def __init__(self, n_actions, n_states, epsilon):
         self.n_actions = n_actions
@@ -43,7 +54,7 @@ class QLearningAgent(object):
         self.N[s][a] += 1
         return
 
-class SARSAAgent(object):
+class SARSAAgent(Agent):
 
     def __init__(self, n_actions, n_states, epsilon):
         self.n_actions = n_actions
@@ -61,7 +72,7 @@ class SARSAAgent(object):
         # TO DO: Add own code
         pass
 
-class ExpectedSARSAAgent(object):
+class ExpectedSARSAAgent(Agent):
 
     def __init__(self, n_actions, n_states, epsilon):
         self.n_actions = n_actions

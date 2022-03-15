@@ -19,67 +19,28 @@ class Environment(object):
         pass
 
     def reset(self):
-        '''Reset the environment.
-        
-        Returns:
-           starting_position: Starting position of the agent.
-        '''
-        raise Exception("Must be implemented by subclass.")
+        pass
     
     def render(self):
-        '''Render environment to screen.'''
-        raise Exception("Must be implemented by subclass.")
+        pass
     
     def step(self, action):
-        '''Take action.
-        
-        Arguments:
-           action: action to take.
-        
-        Returns:
-           reward: reward of action taken.
-        '''
-        raise Exception("Must be implemented by subclass.")
+        pass
     
     def possible_actions(self):
-        '''Return list of possible actions in current state.
-        
-        Returns:
-          actions: list of possible actions.
-        '''
-        raise Exception("Must be implemented by subclass.")
+        pass
     
     def state(self):
-        '''Return current state.
-
-        Returns:
-          state: environment-specific representation of current state.
-        '''
-        raise Exception("Must be implemented by subclass.")
+        pass
     
     def state_size(self):
-        '''Return the number of elements of the state space.
-
-        Returns:
-          state_size: number of elements of the state space.
-        '''
-        raise Exception("Must be implemented by subclass.")
+        pass
     
     def action_size(self):
-        '''Return the number of elements of the action space.
-
-        Returns:
-          state_size: number of elements of the action space.
-        '''
-        raise Exception("Must be implemented by subclass.")
+        pass
     
     def done(self):
-        '''Return whether current episode is finished and environment should be reset.
-
-        Returns:
-          done: True if current episode is finished.
-        '''
-        raise Exception("Must be implemented by subclass.")
+        pass
 
 class ShortcutEnvironment(Environment):
     def __init__(self, seed=None):
