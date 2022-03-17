@@ -11,6 +11,7 @@ Implementation by: Josef Hamelink & Ayush Kandhai
 
 import numpy as np
 import time
+from datetime import datetime
 from Helper import LearningCurvePlot
 from ShortCutAgents import Agent, QLearningAgent
 from ShortCutEnvironment import Environment, ShortcutEnvironment
@@ -35,8 +36,10 @@ class Experiment:
         cum_rs_per_repetition = np.zeros(shape=(self.nreps, self.ne))
 
         for repetition in range(self.nreps):
-            env = ShortcutEnvironment()                             # initialize environment
-            agent = QLearningAgent(self.na, self.ns, self.epsilon)  # initialize agent
+            if self.nreps > 1:
+                progress(repetition+1, self.nreps)
+            env = ShortcutEnvironment()                                         # initialize environment
+            agent = QLearningAgent(self.na, self.ns, self.epsilon, self.alpha)  # initialize agent
             cum_rs = np.zeros(self.ne)
             for episode in range(self.ne):
                 cum_rs[episode] = self.run_episode(env, agent)
@@ -55,12 +58,12 @@ class Experiment:
         cum_r: int = 0          # cumulative reward
         s: int = env.state()    # retrieve current (starting) state
         while not env.done():
-            a: int = agent.select_action(s, self.epsilon)   # choose action
-            r: int = env.step(a)                            # get reward by performing action on environment
-            cum_r += r                                      # update total reward
-            next_state = env.state()                        # retrieve what state the chosen action will result in
-            agent.update(s, a, r, self.alpha, next_state)   # update policy
-            s: int = next_state                             # change the current state to be next state
+            a: int = agent.select_action(s)     # choose action
+            r: int = env.step(a)                # get reward by performing action on environment
+            cum_r += r                          # update total reward
+            next_s = env.state()                # retrieve what state the chosen action will result in
+            agent.update(s, a, r, next_s)       # update policy
+            s: int = next_s                     # change the current state to be next state
         
         return cum_r
 
@@ -89,16 +92,18 @@ def path_plot(Qvalues: np.array) -> None:
     plt.legend()
     plt.savefig('pathplotQL.png')
 
-
 def Q_Learning() -> None:
     # Heatmap
+    print('Running for pathplot...')
     exp = Experiment(n_states=144, n_actions=4, n_episodes = 10000, n_repetitions = 1, epsilon = 0.1, alpha = 0.1)
     Qvalues = exp()
+    print('done\n')
     path_plot(Qvalues)
 
     # Learning Curve
     rewards_for_alpha: dict[float: np.array] = {0.01: None, 0.1: None, 0.5: None, 0.9: None}
     for alpha in rewards_for_alpha.keys():
+        print(f'Running for {alpha = }...')
         exp = Experiment(n_states=144, n_actions=4, n_episodes = 1000, n_repetitions=100, epsilon = 0.1, alpha=alpha)
         rewards_for_alpha[alpha] = exp()
     
@@ -108,16 +113,25 @@ def Q_Learning() -> None:
     plot.save(name = 'LCCL.png')
     return
 
+def progress(iteration: int, n_iters: int) -> None:
+    step = int(iteration/n_iters * 50)
+    fill = '\033[0;47m\033[1m\033[94m-\033[0m'
+    empty = '\033[0;47m \033[0m'
+    print('\r|' + step*fill + (50-step)*empty + '| ' + str(step*2) + '% done', end='')
+    if iteration == n_iters:
+        print('')
+    return
+
 def main():
-    print('\nRunning experiment...\n')
     start: float = time.perf_counter()              # <-- timer start
-    
+    print(f'\nStarting experiment at {datetime.now().strftime("%H:%M:%S")}\n')
+
     Q_Learning()
     
     end: float = time.perf_counter()                # <-- timer end
     minutes: int = int((end-start) // 60)
-    seconds: float = (end-start) % 60
-    stringtime: str = f'{minutes}:{seconds:.1f} min' if minutes else f'{seconds:.3f} sec'
+    seconds: float = round((end-start) % 60, 1)
+    stringtime: str = f'{minutes}:{str(seconds).zfill(4)} min' if minutes else f'{seconds} sec'
     print(f'\nExperiment finished in {stringtime}\n')
 
 if __name__ == '__main__':
