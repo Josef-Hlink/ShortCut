@@ -40,14 +40,15 @@ class QLearningAgent(Agent):
         pass
         
     def select_action(self, state: int) -> int:
-        s = state                                                       # for more concise notation
-        probabilities: np.array = np.zeros(self.n_actions)              # probability that an action is chosen
-        for a in range(self.n_actions):
-            if (a == np.argmax(self.Q[s])):                             # for action with the highest mean value:
-                probabilities[a] = (1-self.epsilon)                     # assign highest probability score
-            else:                                                       # for all other actions:
-                probabilities[a] = (self.epsilon / (self.n_actions-1))  # assign equally divided remaining probability scores
-        return np.random.choice(self.n_actions, p=probabilities)        # choose one action based on probabilities
+        rand: float = np.random.rand()
+        greedy_a: int = np.argmax(self.Q[state])
+        if rand > self.epsilon:
+            return greedy_a
+        else:
+            exp_a = np.random.choice(self.n_actions)
+            while exp_a == greedy_a:
+                exp_a = np.random.choice(self.n_actions)
+            return exp_a
         
     def update(self, state, action, reward, next_state) -> None:
         s, a, r, sp = state, action, reward, next_state                         # for more concise notation
@@ -67,14 +68,15 @@ class SARSAAgent(Agent):
         pass
         
     def select_action(self, state):
-        s = state                                                       # for more concise notation
-        probabilities: np.array = np.zeros(self.n_actions)              # probability that an action is chosen
-        for a in range(self.n_actions):
-            if (a == np.argmax(self.Q[s])):                             # for action with the highest mean value:
-                probabilities[a] = (1-self.epsilon)                     # assign highest probability score
-            else:                                                       # for all other actions:
-                probabilities[a] = (self.epsilon / (self.n_actions-1))  # assign equally divided remaining probability scores
-        return np.random.choice(self.n_actions, p=probabilities)        # choose one action based on probabilities
+        rand: float = np.random.rand()
+        greedy_a: int = np.argmax(self.Q[state])
+        if rand > self.epsilon:
+            return greedy_a
+        else:
+            exp_a = np.random.choice(self.n_actions)
+            while exp_a == greedy_a:
+                exp_a = np.random.choice(self.n_actions)
+            return exp_a
         
     def update(self, state, action, reward, next_state) -> None:
         s, a, r, sp = state, action, reward, next_state                     # for more concise notation

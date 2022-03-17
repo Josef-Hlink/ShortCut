@@ -16,8 +16,6 @@ from Helper import LearningCurvePlot, PathPlot
 from ShortCutAgents import Agent, QLearningAgent, SARSAAgent, ExpectedSARSAAgent
 from ShortCutEnvironment import Environment, ShortcutEnvironment
 
-from matplotlib import pyplot as plt    # temporary, will be removed when plotting is migrated to Helper
-
 class Experiment:
     def __init__(self, n_states: int = 144, n_actions: int = 4, n_episodes: int = 1000, n_repetitions: int = 1,
                  epsilon: float = 0.01, alpha: float = 0.01):
@@ -76,12 +74,7 @@ def path_plot(agent: Agent) -> None:
 
     plot = PathPlot(title=f'Path Plot {agent.lname}')
 
-    # TODO optimize this slow loop
-    maxQs = np.zeros((12,12))
-    for row in range(12):
-        for col in range(12):
-            maxQs[row][col] = np.max(Qvalues[row*12+col]).round(1) # TODO change to more accurate rounding
-
+    maxQs = np.amax(Qvalues, axis=1).reshape((12,12))
     plot.add_Q_values(maxQs)
 
     x_s = [2, 2]
