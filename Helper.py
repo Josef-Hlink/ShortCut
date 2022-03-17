@@ -65,10 +65,29 @@ class ComparisonPlot:
         self.ax.legend()
         self.fig.savefig(name,dpi=300)
 
-# class PathPlot:
-#     def __init__(self):
+class PathPlot:
+    def __init__(self, title=None):
+        self.fig,self.ax = plt.subplots()
+        self.ax.set_xlabel('col nr.')
+        self.ax.set_ylabel('row nr.')
+        if title is not None:
+            self.ax.set_title(title)
+    
+    def add_Q_values(self, Qvalues: np.array):
+        self.ax.imshow(Qvalues, cmap='hot', interpolation='none')
 
+    def add_starting_positions(self, x: list[int], y: list[list[int]]):
+        self.ax.scatter(x, y, marker="o", s=100, c="white", edgecolor='black', label='starting points')
 
+    def add_goal_position(self, x: int, y: int):
+        self.ax.scatter(x, y, marker="o", s=100, c="black", edgecolor='white', label='end point')
+
+    def add_cliffs(self, x, y): # TODO add type hints
+        self.ax.scatter(x, y, marker="x", s=100, c="black", label='cliffs')
+
+    def save(self, name: str = 'test.png'):
+        self.ax.legend()
+        self.fig.savefig(name,dpi=300)
 
 def smooth(y, window, poly=1):
     '''

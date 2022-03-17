@@ -16,6 +16,9 @@ import numpy as np
 class Agent(object):
     """Parent class for type hinting (intellisense) purposes"""
     def __init__(self, n_actions: int = 0, n_states: int = 0, epsilon: float = 0.0):
+        self.sname = ''
+        self.lname = ''
+        self.Q = np.zeros(shape=(2, 2))
         pass
 
     def select_action(self, state: int = 0, epsilon: float = 0.0):
@@ -27,6 +30,8 @@ class Agent(object):
 class QLearningAgent(Agent):
 
     def __init__(self, n_actions: int, n_states: int, epsilon: float, alpha: float):
+        self.sname = 'QL'               # short name
+        self.lname = 'Q Learning'       # long name
         self.n_actions = n_actions
         self.n_states = n_states
         self.epsilon = epsilon
@@ -52,6 +57,8 @@ class QLearningAgent(Agent):
 class SARSAAgent(Agent):
 
     def __init__(self, n_actions: int, n_states: int, epsilon: float, alpha: float):
+        self.sname = 'SARSA'    # short name
+        self.lname = 'SARSA'    # long name
         self.n_actions = n_actions
         self.n_states = n_states
         self.epsilon = epsilon
@@ -70,13 +77,15 @@ class SARSAAgent(Agent):
         return np.random.choice(self.n_actions, p=probabilities)        # choose one action based on probabilities
         
     def update(self, state, action, reward, next_state) -> None:
-        s, a, r, sp = state, action, reward, next_state                         # for more concise notation
-        self.Q[s][a] += self.alpha * (r + np.max(self.Q[sp]) - self.Q[s][a])    # update estimated mean reward for the action
+        s, a, r, sp = state, action, reward, next_state                     # for more concise notation
+        ap: int = self.select_action(sp)                                    # (hypothetical) next action according to own policy
+        self.Q[s][a] += self.alpha * (r + self.Q[sp][ap] - self.Q[s][a])    # update estimated mean reward for the action
         return
 
 class ExpectedSARSAAgent(Agent):
 
     def __init__(self, n_actions, n_states, epsilon):
+        self.name = 'ESARSA'
         self.n_actions = n_actions
         self.n_states = n_states
         self.epsilon = epsilon

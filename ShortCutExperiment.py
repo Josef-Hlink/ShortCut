@@ -9,14 +9,14 @@ Template provided by: Thomas Moerland
 Implementation by: Josef Hamelink & Ayush Kandhai
 """
 
-import numpy as np
-import time
-from datetime import datetime
-from Helper import LearningCurvePlot
-from ShortCutAgents import Agent, QLearningAgent
+import numpy as np                  # arrays
+import time                         # calculating runtime
+from datetime import datetime       # time that the experiment has started
+from Helper import LearningCurvePlot, PathPlot
+from ShortCutAgents import Agent, QLearningAgent, SARSAAgent, ExpectedSARSAAgent
 from ShortCutEnvironment import Environment, ShortcutEnvironment
-#         ^                          ^ wtf is this lmao
-from matplotlib import pyplot as plt
+
+from matplotlib import pyplot as plt    # temporary, will be removed when plotting is migrated to Helper
 
 class Experiment:
     def __init__(self, n_states: int = 144, n_actions: int = 4, n_episodes: int = 1000, n_repetitions: int = 1,
@@ -28,18 +28,21 @@ class Experiment:
         self.epsilon = epsilon      # tunes the greediness of the agent ( = exploration rate )
         self.alpha = alpha          # tunes how heavy the agent weighs new information ( = learning rate )
     
-    def __call__(self):
-        return self.run_repetitions()
+    def __call__(self, environment_type: object, agent_type: object):
+        return self.run_repetitions(environment_type, agent_type)
 
-    def run_repetitions(self) -> np.array:
+    def run_repetitions(self, environment_type: object, agent_type: object) -> np.array:
+
+        NewAgent = agent_type
+        NewEnvironment = environment_type
 
         cum_rs_per_repetition = np.zeros(shape=(self.nreps, self.ne))
 
         for repetition in range(self.nreps):
             if self.nreps > 1:
                 progress(repetition+1, self.nreps)
-            env = ShortcutEnvironment()                                         # initialize environment
-            agent = QLearningAgent(self.na, self.ns, self.epsilon, self.alpha)  # initialize agent
+            env = NewEnvironment()                                          # initialize environment
+            agent = NewAgent(self.na, self.ns, self.epsilon, self.alpha)    # initialize agent
             cum_rs = np.zeros(self.ne)
             for episode in range(self.ne):
                 cum_rs[episode] = self.run_episode(env, agent)
@@ -47,9 +50,8 @@ class Experiment:
             cum_rs_per_repetition[repetition] = cum_rs
         cum_r_per_episode: np.array = np.average(cum_rs_per_repetition, axis=0)
         
-        if self.nreps == 1:         # NOTE this is a bit hacky
-            Qvalues = agent.Q       # but it allows us to pass an otherwise inaccessible property of the agent
-            return Qvalues          # which we need to plot the heatmap of max Q values
+        if self.nreps == 1:     # NOTE this is a bit hacky, but it allows us to pass an otherwise inaccessible property of the agent
+            return agent        # which we need to plot the heatmap of max Q values
         
         return cum_r_per_episode    # otherwise we simply return the cum_r's for every episode
     
@@ -68,35 +70,59 @@ class Experiment:
         return cum_r
 
 
-def path_plot(Qvalues: np.array) -> None:    
+def path_plot(agent: Agent) -> None:    
     env = ShortcutEnvironment()
-    
+    Qvalues = agent.Q
+
+    plot = PathPlot(title=f'Path Plot {agent.lname}')
+
     # TODO optimize this slow loop
     maxQs = np.zeros((12,12))
     for row in range(12):
         for col in range(12):
             maxQs[row][col] = np.max(Qvalues[row*12+col]).round(1) # TODO change to more accurate rounding
 
+    plot.add_Q_values(maxQs)
+
     x_s = [2, 2]
     y_s = [[2], [9]]
+    plot.add_starting_positions(x_s, y_s)
+
+    y_e, x_e = np.where(env.s == 'G')
+    plot.add_goal_position(x_e, y_e)
 
     y_c, x_c = np.where(env.s == 'C')
-    y_e, x_e = np.where(env.s == 'G')
+    plot.add_cliffs(x_c, y_c)
 
-    # TODO move all of this to Helper.py
-    plt.imshow(maxQs, cmap='hot', interpolation='none')
-    plt.scatter(x_s, y_s, marker="o", s=100, c="white", edgecolor='black', label='starting points')
-    plt.scatter(x_e, y_e, marker="o", s=100, c="black", edgecolor='white', label='end point')
-
-    plt.scatter(x_c, y_c, marker="x", s=100, c="black", label='cliffs')
-    plt.legend()
-    plt.savefig('pathplotQL.png')
+    plot.save(f'pp{agent.sname}.png')
+    return
 
 def Q_Learning() -> None:
     # Heatmap
     print('Running for pathplot...')
     exp = Experiment(n_states=144, n_actions=4, n_episodes = 10000, n_repetitions = 1, epsilon = 0.1, alpha = 0.1)
-    Qvalues = exp()
+    trainedAgent = exp(ShortcutEnvironment, QLearningAgent)
+    print('done\n')
+    path_plot(trainedAgent)
+
+    # Learning Curve
+    rewards_for_alpha: dict[float: np.array] = {0.01: None, 0.1: None, 0.5: None, 0.9: None}
+    for alpha in rewards_for_alpha.keys():
+        print(f'Running for {alpha = }...')
+        exp = Experiment(n_states=144, n_actions=4, n_episodes = 1000, n_repetitions=100, epsilon = 0.1, alpha=alpha)
+        rewards_for_alpha[alpha] = exp(ShortcutEnvironment, QLearningAgent)
+    
+    plot = LearningCurvePlot(title = 'Learning Curve (Q Learning)')
+    for index, (alpha, rewards) in enumerate(rewards_for_alpha.items()):
+        plot.add_curve(y = rewards, color_index = index, label = f'α = {alpha}')
+    plot.save(name = 'lcQL.png')
+    return
+
+def SARSA() -> None:
+    # Heatmap
+    print('Running for pathplot...')
+    exp = Experiment(n_states=144, n_actions=4, n_episodes = 10000, n_repetitions = 1, epsilon = 0.1, alpha = 0.1)
+    Qvalues = exp(ShortcutEnvironment, SARSAAgent)
     print('done\n')
     path_plot(Qvalues)
 
@@ -105,12 +131,12 @@ def Q_Learning() -> None:
     for alpha in rewards_for_alpha.keys():
         print(f'Running for {alpha = }...')
         exp = Experiment(n_states=144, n_actions=4, n_episodes = 1000, n_repetitions=100, epsilon = 0.1, alpha=alpha)
-        rewards_for_alpha[alpha] = exp()
+        rewards_for_alpha[alpha] = exp(ShortcutEnvironment, SARSAAgent)
     
-    plot = LearningCurvePlot(title = 'Learning Curve (Q Learning)')
+    plot = LearningCurvePlot(title = 'Learning Curve (SARSA)')
     for index, (alpha, rewards) in enumerate(rewards_for_alpha.items()):
         plot.add_curve(y = rewards, color_index = index, label = f'α = {alpha}')
-    plot.save(name = 'LCCL.png')
+    plot.save(name = 'lcSARSA.png')
     return
 
 def progress(iteration: int, n_iters: int) -> None:
@@ -126,7 +152,11 @@ def main():
     start: float = time.perf_counter()              # <-- timer start
     print(f'\nStarting experiment at {datetime.now().strftime("%H:%M:%S")}\n')
 
+    print('\033[1m---Q Learning---\033[0m')
     Q_Learning()
+
+    print('\n\033[1m---SARSA---\033[0m')
+    SARSA()
     
     end: float = time.perf_counter()                # <-- timer end
     minutes: int = int((end-start) // 60)
