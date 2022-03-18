@@ -9,6 +9,7 @@ Template provided by: Thomas Moerland
 Implementation by: Josef Hamelink & Ayush Kandhai
 """
 
+import os, shutil                   # directory management 
 import numpy as np                  # arrays
 import time                         # calculating runtime
 from datetime import datetime       # time that the experiment has started
@@ -37,8 +38,8 @@ class Experiment:
         cum_rs_per_repetition = np.zeros(shape=(self.nreps, self.ne))
 
         for repetition in range(self.nreps):
-            if self.nreps > 1:
-                progress(repetition+1, self.nreps)
+            #if self.nreps > 1:
+                #progress(repetition+1, self.nreps)
             env = NewEnvironment()                                          # initialize environment
             agent = NewAgent(self.na, self.ns, self.epsilon, self.alpha)    # initialize agent
             cum_rs = np.zeros(self.ne)
@@ -72,7 +73,7 @@ def path_plot(agent: Agent) -> None:
     env = ShortcutEnvironment()
     Qvalues = agent.Q
 
-    plot = PathPlot(title=f'Path Plot {agent.lname}')
+    plot = PathPlot(title=f'Path Plot ({agent.lname})')
 
     maxQs = np.amax(Qvalues, axis=1).reshape((12,12))
     plot.add_Q_values(maxQs)
@@ -87,7 +88,7 @@ def path_plot(agent: Agent) -> None:
     y_c, x_c = np.where(env.s == 'C')
     plot.add_cliffs(x_c, y_c)
 
-    plot.save(f'pp{agent.sname}.png')
+    plot.save(name = os.path.join(RESULTSPATH, f'pp{agent.sname}.png'))
     return
 
 def Q_Learning() -> None:
@@ -108,7 +109,7 @@ def Q_Learning() -> None:
     plot = LearningCurvePlot(title = 'Learning Curve (Q Learning)')
     for index, (alpha, rewards) in enumerate(rewards_for_alpha.items()):
         plot.add_curve(y = rewards, color_index = index, label = f'α = {alpha}')
-    plot.save(name = 'lcQL.png')
+    plot.save(name = os.path.join(RESULTSPATH, 'lcQL.png'))
     return
 
 def SARSA() -> None:
@@ -129,7 +130,7 @@ def SARSA() -> None:
     plot = LearningCurvePlot(title = 'Learning Curve (SARSA)')
     for index, (alpha, rewards) in enumerate(rewards_for_alpha.items()):
         plot.add_curve(y = rewards, color_index = index, label = f'α = {alpha}')
-    plot.save(name = 'lcSARSA.png')
+    plot.save(name = os.path.join(RESULTSPATH, 'lcSARSA.png'))
     return
 
 def progress(iteration: int, n_iters: int) -> None:
@@ -142,6 +143,21 @@ def progress(iteration: int, n_iters: int) -> None:
     return
 
 def main():
+    cwd = os.getcwd()
+    if cwd.split(os.sep)[-1] != 'src':
+        if not os.path.exists(os.path.join(cwd, 'src')):
+            raise FileNotFoundError('Please work from either the parent directory "ShortCut" or directly from "src".')
+        os.chdir(os.path.join(cwd, 'src'))
+        cwd = os.getcwd()
+        print(f'Working directory changed to "{cwd}"')
+
+    global RESULTSPATH
+    RESULTSPATH = os.path.join('..', 'results')
+     
+    if os.path.exists(RESULTSPATH):
+        shutil.rmtree(RESULTSPATH)
+        os.mkdir(RESULTSPATH)
+
     start: float = time.perf_counter()              # <-- timer start
     print(f'\nStarting experiment at {datetime.now().strftime("%H:%M:%S")}\n')
 
