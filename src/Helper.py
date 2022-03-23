@@ -70,6 +70,10 @@ class PathPlot:
         self.fig,self.ax = plt.subplots()
         self.ax.set_xlabel('col nr.')
         self.ax.set_ylabel('row nr.')
+        labelrange = [i for i in range(12)]
+        self.ax.set_xticks(ticks=labelrange, labels=labelrange)
+        self.ax.set_yticks(ticks=labelrange, labels=labelrange)
+        self.ax.tick_params(axis='both', bottom=False, left=False)
         if title is not None:
             self.ax.set_title(title)
     
@@ -77,20 +81,22 @@ class PathPlot:
         self.ax.imshow(Qvalues, cmap='hot', interpolation='none')
 
     def add_starting_positions(self, x: list[int], y: list[list[int]]):
-        self.ax.scatter(x, y, marker="o", s=100, c="white", edgecolor='black', label='starting points')
+        self.ax.scatter(x, y, marker="o", s=100, c="black", edgecolor='white', label='starting points')
 
     def add_goal_position(self, x: int, y: int):
-        self.ax.scatter(x, y, marker="o", s=100, c="black", edgecolor='white', label='end point')
+        self.ax.scatter(x, y, marker="o", s=100, c="white", edgecolor='black', label='end point')
 
     def add_cliffs(self, x: list[list[int]], y: list[list[int]]):
         self.ax.scatter(x, y, marker="x", s=100, c="black", label='cliffs')
     
     def add_path(self, x: list[list[int]], y: list[list[int]], path_nr: int = 1):
-        m = '*' if path_nr == 1 else 's'
-        self.ax.scatter(x, y, marker=m, s=100, c="black")
+        if path_nr == 1:
+            self.ax.scatter(x, y, marker=(4,1,0), s=100, c="black", label='path 1')
+        elif path_nr == 2:
+            self.ax.scatter(x, y, marker=(4,1,45), s=100, c="black", label='path 2')
 
     def save(self, name: str = 'test.png'):
-        self.ax.legend()
+        self.ax.legend(loc=1, ncol=2, prop={'size': 8})
         self.fig.savefig(name,dpi=300)
 
 def smooth(y, window, poly=1):
