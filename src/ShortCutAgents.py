@@ -9,16 +9,17 @@ Template provided by: Thomas Moerland
 Implementation by: Josef Hamelink & Ayush Kandhai
 """
 
-
 import random
 import numpy as np
 
 class Agent(object):
     """Parent class for type hinting (intellisense) purposes"""
     def __init__(self, n_actions: int = 0, n_states: int = 0, epsilon: float = 0.0):
+       # so IDE knows that an Agent  instance should have these properties
         self.sname = ''
         self.lname = ''
         self.Q = np.zeros(shape=(2, 2))
+        self.epsilon = epsilon
         pass
 
     def select_action(self, state: int = 0, epsilon: float = 0.0):
@@ -45,11 +46,11 @@ class QLearningAgent(Agent):
         if rand > self.epsilon:
             return greedy_a
         else:
-            exp_a = np.random.choice(self.n_actions)
-            while exp_a == greedy_a:
-                exp_a = np.random.choice(self.n_actions)
-            return exp_a
-        
+            expl_a = np.random.choice(self.n_actions)
+            while expl_a == greedy_a:
+                expl_a = np.random.choice(self.n_actions)
+            return expl_a
+    
     def update(self, state, action, reward, next_state) -> None:
         s, a, r, sp = state, action, reward, next_state                         # for more concise notation
         self.Q[s][a] += self.alpha * (r + np.max(self.Q[sp]) - self.Q[s][a])    # update estimated mean reward for the action
@@ -73,10 +74,10 @@ class SARSAAgent(Agent):
         if rand > self.epsilon:
             return greedy_a
         else:
-            exp_a = np.random.choice(self.n_actions)
-            while exp_a == greedy_a:
-                exp_a = np.random.choice(self.n_actions)
-            return exp_a
+            expl_a = np.random.choice(self.n_actions)
+            while expl_a == greedy_a:
+                expl_a = np.random.choice(self.n_actions)
+            return expl_a
         
     def update(self, state, action, reward, next_state) -> None:
         s, a, r, sp = state, action, reward, next_state                     # for more concise notation
@@ -86,19 +87,28 @@ class SARSAAgent(Agent):
 
 class ExpectedSARSAAgent(Agent):
 
-    def __init__(self, n_actions, n_states, epsilon):
-        self.name = 'ESARSA'
+    def __init__(self, n_actions: int, n_states: int, epsilon: float, alpha: float):
+        self.sname = 'ESARSA'           # short name
+        self.lname = 'Expected SARSA'   # long name
         self.n_actions = n_actions
         self.n_states = n_states
         self.epsilon = epsilon
-        # TO DO: Add own code
+        self.alpha = alpha
+        self.Q = np.zeros(shape=(self.n_states, self.n_actions),dtype=np.float64)
         pass
         
     def select_action(self, state):
-        # TO DO: Add own code
-        a = random.choice(range(self.n_actions)) # Replace this with correct action selection
-        return a
-        
-    def update(self, state, action, reward):
-        # TO DO: Add own code
-        pass
+        rand: float = np.random.rand()
+        greedy_a: int = np.argmax(self.Q[state])
+        if rand > self.epsilon:
+            return greedy_a
+        else:
+            expl_a = np.random.choice(self.n_actions)
+            while expl_a == greedy_a:
+                expl_a = np.random.choice(self.n_actions)
+            return expl_a
+            
+    def update(self, state, action, reward, next_state) -> None:
+        s, a, r, sp = state, action, reward, next_state                         # for more concise notation
+        self.Q[s][a] += self.alpha * (r + np.max(self.Q[sp]) - self.Q[s][a])    # TODO actual ESARSA updating
+        return

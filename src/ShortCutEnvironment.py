@@ -16,6 +16,9 @@ from scipy import rand
 class Environment(object):
 
     def __init__(self):
+        # so IDE knows that an Environment instance should have these properties
+        self.y = 0
+        self.x = 0
         pass
 
     def reset(self):

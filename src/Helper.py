@@ -82,8 +82,12 @@ class PathPlot:
     def add_goal_position(self, x: int, y: int):
         self.ax.scatter(x, y, marker="o", s=100, c="black", edgecolor='white', label='end point')
 
-    def add_cliffs(self, x, y): # TODO add type hints
+    def add_cliffs(self, x: list[list[int]], y: list[list[int]]):
         self.ax.scatter(x, y, marker="x", s=100, c="black", label='cliffs')
+    
+    def add_path(self, x: list[list[int]], y: list[list[int]], path_nr: int = 1):
+        m = '*' if path_nr == 1 else 's'
+        self.ax.scatter(x, y, marker=m, s=100, c="black")
 
     def save(self, name: str = 'test.png'):
         self.ax.legend()
@@ -98,6 +102,29 @@ def smooth(y, window, poly=1):
 def close_figures() -> None:
     '''so we don't need to import matplotlib in BanditExperiment'''
     return plt.close('all')
+
+def progress(iteration: int, n_iters: int) -> None:
+    steps = int(50 * (iteration+1) // n_iters)			        # number of characters that will represent the progress
+    percentage = round(100 * (iteration+1) / float(n_iters))    # rounded percentage
+    
+    # white bg, bold char, blue char, reset after
+    format_done = lambda string: f'\033[0;47m\033[1m\033[94m{string}\033[0m'
+    # white bg, bold char, lightgrey char, reset after
+    format_todo = lambda string: f'\033[0;47m\033[1m\033[2m{string}\033[0m'
+    done_char = format_done('━')
+    todo_char = format_todo('━')
+
+    frames = ['/', '-', '\\', '|']
+    frame = frames[percentage%4]
+    spin_char = format_done(frame)
+    
+    bar = (steps)*done_char + (50-steps)*todo_char		# the actual bar
+    suffix = spin_char + ' ' + str(percentage) + '%'    # spinner and percentage
+    
+    print('\r|' + bar + '| ' + suffix, end='')          # print bar
+    if iteration == n_iters:						    # for last iteration
+        print('\r|' + 50*done_char + '| complete')	    # print bar, with an actual endline character
+    return
 
 if __name__ == '__main__':
     # Test Learning curve plot

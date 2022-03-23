@@ -13,7 +13,7 @@ import os, shutil                   # directory management
 import numpy as np                  # arrays
 import time                         # calculating runtime
 from datetime import datetime       # time that the experiment has started
-from Helper import LearningCurvePlot, PathPlot
+from Helper import LearningCurvePlot, PathPlot, progress
 from ShortCutAgents import Agent, QLearningAgent, SARSAAgent, ExpectedSARSAAgent
 from ShortCutEnvironment import Environment, ShortcutEnvironment
 
@@ -38,8 +38,8 @@ class Experiment:
         cum_rs_per_repetition = np.zeros(shape=(self.nreps, self.ne))
 
         for repetition in range(self.nreps):
-            #if self.nreps > 1:
-                #progress(repetition+1, self.nreps)
+            if self.nreps > 1:
+                progress(repetition+1, self.nreps)
             env = NewEnvironment()                                          # initialize environment
             agent = NewAgent(self.na, self.ns, self.epsilon, self.alpha)    # initialize agent
             cum_rs = np.zeros(self.ne)
@@ -67,9 +67,35 @@ class Experiment:
             s: int = next_s                     # change the current state to be next state
         
         return cum_r
+    
+def run_greedy_episode(env: Environment, agent: Agent, start_at: tuple[int] = (2,2)) -> tuple[list]:
+    """
+    Run one greedy episode based on an agent that has already trained
+    ---
+    params:
+        - env: an Environment instance the agent is to interact with
+        - agent: a greedy Agent instance that has already been trained
+        - start_at: the agent's starting position
+    
+    returns:
+        - y_p: [p for path] list containing the agent's y position per step
+        - x_p: [p for path] list containing the agent's x position per step
+    """
+    y_p, x_p = [], []
+    env.y, env.x = start_at[0], start_at[1] # place the agent in the environment at desired starting position
+    
+    s: int = env.state()                    # retrieve current (starting) state
+    while not env.done():
+        a: int = agent.select_action(s)     # choose action
+        env.step(a)                         # perform action
+        s = env.state()                     # update state
+        y_p.append(env.y)                   # store new position
+        x_p.append(env.x)
+    y_p.pop()   # remove endpoint state
+    x_p.pop()
+    return y_p, x_p
 
-
-def path_plot(agent: Agent) -> None:    
+def path_plot(agent: Agent, path1, path2) -> None:    
     env = ShortcutEnvironment()
     Qvalues = agent.Q
 
@@ -88,6 +114,9 @@ def path_plot(agent: Agent) -> None:
     y_c, x_c = np.where(env.s == 'C')
     plot.add_cliffs(x_c, y_c)
 
+    plot.add_path(path1[1], path1[0], path_nr = 1)
+    plot.add_path(path2[1], path2[0], path_nr = 2)
+
     plot.save(name = os.path.join(RESULTSPATH, f'pp{agent.sname}.png'))
     return
 
@@ -95,14 +124,18 @@ def Q_Learning() -> None:
     # Heatmap
     print('Running for pathplot...')
     exp = Experiment(n_states=144, n_actions=4, n_episodes = 10000, n_repetitions = 1, epsilon = 0.1, alpha = 0.1)
-    trainedAgent = exp(ShortcutEnvironment, QLearningAgent)
-    print('done\n')
-    path_plot(trainedAgent)
+    trainedAgent: Agent = exp(ShortcutEnvironment, QLearningAgent)
+    trainedAgent.epsilon = 0.0          ## make the agent perform a greedy run
+    path1 = run_greedy_episode(ShortcutEnvironment(), trainedAgent, start_at=(2,2))
+    path2 = run_greedy_episode(ShortcutEnvironment(), trainedAgent, start_at=(9,2))
+
+    path_plot(trainedAgent, path1, path2)
+    print('complete\n')
 
     # Learning Curve
     rewards_for_alpha: dict[float: np.array] = {0.01: None, 0.1: None, 0.5: None, 0.9: None}
     for alpha in rewards_for_alpha.keys():
-        print(f'Running for {alpha = }...')
+        print(f'Running 100 repetitions for {alpha = }...')
         exp = Experiment(n_states=144, n_actions=4, n_episodes = 1000, n_repetitions=100, epsilon = 0.1, alpha=alpha)
         rewards_for_alpha[alpha] = exp(ShortcutEnvironment, QLearningAgent)
     
@@ -116,14 +149,18 @@ def SARSA() -> None:
     # Heatmap
     print('Running for pathplot...')
     exp = Experiment(n_states=144, n_actions=4, n_episodes = 10000, n_repetitions = 1, epsilon = 0.1, alpha = 0.1)
-    Qvalues = exp(ShortcutEnvironment, SARSAAgent)
-    print('done\n')
-    path_plot(Qvalues)
+    trainedAgent = exp(ShortcutEnvironment, SARSAAgent)
+    trainedAgent.epsilon = 0.0          ## make the agent perform a greedy run
+    path1 = run_greedy_episode(ShortcutEnvironment(), trainedAgent, start_at=(2,2))
+    path2 = run_greedy_episode(ShortcutEnvironment(), trainedAgent, start_at=(9,2))
+
+    path_plot(trainedAgent, path1, path2)
+    print('complete\n')
 
     # Learning Curve
     rewards_for_alpha: dict[float: np.array] = {0.01: None, 0.1: None, 0.5: None, 0.9: None}
     for alpha in rewards_for_alpha.keys():
-        print(f'Running for {alpha = }...')
+        print(f'Running 100 repetitions for {alpha = }...')
         exp = Experiment(n_states=144, n_actions=4, n_episodes = 1000, n_repetitions=100, epsilon = 0.1, alpha=alpha)
         rewards_for_alpha[alpha] = exp(ShortcutEnvironment, SARSAAgent)
     
@@ -133,13 +170,25 @@ def SARSA() -> None:
     plot.save(name = os.path.join(RESULTSPATH, 'lcSARSA.png'))
     return
 
-def progress(iteration: int, n_iters: int) -> None:
-    step = int(iteration/n_iters * 50)
-    fill = '\033[0;47m\033[1m\033[94m-\033[0m'
-    empty = '\033[0;47m \033[0m'
-    print('\r|' + step*fill + (50-step)*empty + '| ' + str(step*2) + '% done', end='')
-    if iteration == n_iters:
-        print('')
+def ESARSA() -> None:
+    # Heatmap
+    print('Running for pathplot...')
+    exp = Experiment(n_states=144, n_actions=4, n_episodes = 10000, n_repetitions = 1, epsilon = 0.1, alpha = 0.1)
+    Qvalues = exp(ShortcutEnvironment, ExpectedSARSAAgent)
+    print('\n')
+    path_plot(Qvalues)
+
+    # Learning Curve
+    rewards_for_alpha: dict[float: np.array] = {0.01: None, 0.1: None, 0.5: None, 0.9: None}
+    for alpha in rewards_for_alpha.keys():
+        print(f'Running 100 repetitions for {alpha = }...')
+        exp = Experiment(n_states=144, n_actions=4, n_episodes = 1000, n_repetitions=100, epsilon = 0.1, alpha=alpha)
+        rewards_for_alpha[alpha] = exp(ShortcutEnvironment, ExpectedSARSAAgent)
+    
+    plot = LearningCurvePlot(title = 'Learning Curve (SARSA)')
+    for index, (alpha, rewards) in enumerate(rewards_for_alpha.items()):
+        plot.add_curve(y = rewards, color_index = index, label = f'α = {alpha}')
+    plot.save(name = os.path.join(RESULTSPATH, 'lcSARSA.png'))
     return
 
 def main():
