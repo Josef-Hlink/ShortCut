@@ -25,7 +25,7 @@ class Agent(object):
     def select_action(self, state: int = 0, epsilon: float = 0.0):
         pass
 
-    def update(self, state, action, reward, alpha, next_state):
+    def update(self, state, action, reward,  next_state):
         pass
 
 class QLearningAgent(Agent):
@@ -109,6 +109,14 @@ class ExpectedSARSAAgent(Agent):
             return expl_a
             
     def update(self, state, action, reward, next_state) -> None:
+        if self.epsilon == 0:
+            return
         s, a, r, sp = state, action, reward, next_state                         # for more concise notation
-        self.Q[s][a] += self.alpha * (r + np.max(self.Q[sp]) - self.Q[s][a])    # TODO actual ESARSA updating
+        expQ: float = 0.0
+        for ap in range(self.n_actions):
+            # get weighted Q action values based on probability of the action being chosen and accumulate them
+            weightedQ = (1- self.epsilon) * self.Q[sp][ap] if ap == np.argmax(self.Q[sp]) else \
+                        (self.epsilon/(self.n_actions-1)) * self.Q[sp][ap]
+            expQ += weightedQ
+        self.Q[s][a] += self.alpha * (r + expQ - self.Q[s][a])                  # update estimated mean reward for the action
         return

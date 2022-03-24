@@ -145,17 +145,17 @@ def Q_Learning() -> None:
     path_plot(trainedAgent, path1, path2, windy=True)
     progress(1, 2)
 
-    # # Learning Curve
-    # rewards_for_alpha: dict[float: np.array] = {0.01: None, 0.1: None, 0.5: None, 0.9: None}
-    # for alpha in rewards_for_alpha.keys():
-    #     print(f'Running 100 repetitions for {alpha = }...')
-    #     exp = Experiment(n_states=144, n_actions=4, n_episodes = 1000, n_repetitions=100, epsilon = 0.1, alpha=alpha)
-    #     rewards_for_alpha[alpha] = exp(ShortcutEnvironment, QLearningAgent)
+    # Learning Curve
+    rewards_for_alpha: dict[float: np.array] = {0.01: None, 0.1: None, 0.5: None, 0.9: None}
+    for alpha in rewards_for_alpha.keys():
+        print(f'Running 100 repetitions for {alpha = }...')
+        exp = Experiment(n_states=144, n_actions=4, n_episodes = 1000, n_repetitions=100, epsilon = 0.1, alpha=alpha)
+        rewards_for_alpha[alpha] = exp(ShortcutEnvironment, QLearningAgent)
     
-    # plot = LearningCurvePlot(title = 'Learning Curve (Q Learning)')
-    # for index, (alpha, rewards) in enumerate(rewards_for_alpha.items()):
-    #     plot.add_curve(y = rewards, color_index = index, label = f'α = {alpha}')
-    # plot.save(name = os.path.join(RESULTSPATH, 'lcQL.png'))
+    plot = LearningCurvePlot(title = 'Learning Curve (Q Learning)')
+    for index, (alpha, rewards) in enumerate(rewards_for_alpha.items()):
+        plot.add_curve(y = rewards, color_index = index, label = f'α = {alpha}')
+    plot.save(name = os.path.join(RESULTSPATH, 'lcQL.png'))
     return
 
 def SARSA() -> None:
@@ -181,17 +181,17 @@ def SARSA() -> None:
     path_plot(trainedAgent, path1, path2, windy=True)
     progress(1, 2)
 
-    # # Learning Curve
-    # rewards_for_alpha: dict[float: np.array] = {0.01: None, 0.1: None, 0.5: None, 0.9: None}
-    # for alpha in rewards_for_alpha.keys():
-    #     print(f'Running 100 repetitions for {alpha = }...')
-    #     exp = Experiment(n_states=144, n_actions=4, n_episodes = 1000, n_repetitions=100, epsilon = 0.1, alpha=alpha)
-    #     rewards_for_alpha[alpha] = exp(ShortcutEnvironment, SARSAAgent)
+    # Learning Curve
+    rewards_for_alpha: dict[float: np.array] = {0.01: None, 0.1: None, 0.5: None, 0.9: None}
+    for alpha in rewards_for_alpha.keys():
+        print(f'Running 100 repetitions for {alpha = }...')
+        exp = Experiment(n_states=144, n_actions=4, n_episodes = 1000, n_repetitions=100, epsilon = 0.1, alpha=alpha)
+        rewards_for_alpha[alpha] = exp(ShortcutEnvironment, SARSAAgent)
     
-    # plot = LearningCurvePlot(title = 'Learning Curve (SARSA)')
-    # for index, (alpha, rewards) in enumerate(rewards_for_alpha.items()):
-    #     plot.add_curve(y = rewards, color_index = index, label = f'α = {alpha}')
-    # plot.save(name = os.path.join(RESULTSPATH, 'lcSARSA.png'))
+    plot = LearningCurvePlot(title = 'Learning Curve (SARSA)')
+    for index, (alpha, rewards) in enumerate(rewards_for_alpha.items()):
+        plot.add_curve(y = rewards, color_index = index, label = f'α = {alpha}')
+    plot.save(name = os.path.join(RESULTSPATH, 'lcSARSA.png'))
     return
 
 def ESARSA() -> None:
@@ -224,10 +224,10 @@ def ESARSA() -> None:
         exp = Experiment(n_states=144, n_actions=4, n_episodes = 1000, n_repetitions=100, epsilon = 0.1, alpha=alpha)
         rewards_for_alpha[alpha] = exp(ShortcutEnvironment, ExpectedSARSAAgent)
     
-    plot = LearningCurvePlot(title = 'Learning Curve (SARSA)')
+    plot = LearningCurvePlot(title = 'Learning Curve (ESARSA)')
     for index, (alpha, rewards) in enumerate(rewards_for_alpha.items()):
         plot.add_curve(y = rewards, color_index = index, label = f'α = {alpha}')
-    plot.save(name = os.path.join(RESULTSPATH, 'lcSARSA.png'))
+    plot.save(name = os.path.join(RESULTSPATH, 'lcESARSA.png'))
     return
 
 def main():
@@ -255,8 +255,8 @@ def main():
     print('\n\033[1m---SARSA---\033[0m')
     SARSA()
 
-    # print('\n\033[1m---SARSA---\033[0m')
-    # ESARSA()
+    print('\n\033[1m---Expected SARSA---\033[0m')
+    ESARSA()
     
     end: float = time.perf_counter()                # <-- timer end
     minutes: int = int((end-start) // 60)
