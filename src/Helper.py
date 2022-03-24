@@ -128,7 +128,7 @@ def progress(iteration: int, n_iters: int) -> None:
     suffix = spin_char + ' ' + str(percentage) + '%'    # spinner and percentage
     
     print('\r|' + bar + '| ' + suffix, end='')          # print bar
-    if iteration == n_iters:						    # for last iteration
+    if percentage == 100:						    # for last iteration
         print('\r|' + 50*done_char + '| complete')	    # print bar, with an actual endline character
     return
 
