@@ -224,7 +224,7 @@ def ESARSA() -> None:
         exp = Experiment(n_states=144, n_actions=4, n_episodes = 1000, n_repetitions=100, epsilon = 0.1, alpha=alpha)
         rewards_for_alpha[alpha] = exp(ShortcutEnvironment, ExpectedSARSAAgent)
     
-    plot = LearningCurvePlot(title = 'Learning Curve (ESARSA)')
+    plot = LearningCurvePlot(title = 'Learning Curve (Expected SARSA)')
     for index, (alpha, rewards) in enumerate(rewards_for_alpha.items()):
         plot.add_curve(y = rewards, color_index = index, label = f'α = {alpha}')
     plot.save(name = os.path.join(RESULTSPATH, 'lcESARSA.png'))
