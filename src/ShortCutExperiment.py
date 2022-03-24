@@ -244,7 +244,7 @@ def main():
      
     if os.path.exists(RESULTSPATH):
         shutil.rmtree(RESULTSPATH)
-        os.mkdir(RESULTSPATH)
+    os.mkdir(RESULTSPATH)
 
     start: float = time.perf_counter()              # <-- timer start
     print(f'\nStarting experiment at {datetime.now().strftime("%H:%M:%S")}\n')
