@@ -30,7 +30,7 @@ class Agent(object):
 
 class QLearningAgent(Agent):
 
-    def __init__(self, n_actions: int, n_states: int, epsilon: float, alpha: float):
+    def __init__(self, n_actions: int = 4, n_states: int = 144, epsilon: float = 0.1, alpha: float = 0.1):
         self.sname = 'QL'               # short name
         self.lname = 'Q Learning'       # long name
         self.n_actions = n_actions
@@ -58,7 +58,7 @@ class QLearningAgent(Agent):
 
 class SARSAAgent(Agent):
 
-    def __init__(self, n_actions: int, n_states: int, epsilon: float, alpha: float):
+    def __init__(self, n_actions: int = 4, n_states: int = 144, epsilon: float = 0.1, alpha: float = 0.1):
         self.sname = 'SARSA'    # short name
         self.lname = 'SARSA'    # long name
         self.n_actions = n_actions
@@ -87,7 +87,7 @@ class SARSAAgent(Agent):
 
 class ExpectedSARSAAgent(Agent):
 
-    def __init__(self, n_actions: int, n_states: int, epsilon: float, alpha: float):
+    def __init__(self, n_actions: int = 4, n_states: int = 144, epsilon: float = 0.1, alpha: float = 0.1):
         self.sname = 'ESARSA'           # short name
         self.lname = 'Expected SARSA'   # long name
         self.n_actions = n_actions
