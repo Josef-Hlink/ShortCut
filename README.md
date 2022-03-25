@@ -9,6 +9,6 @@ In this project we explore three agents with distinct policies; **Q-learning**, 
 The environment the agents are to interact with is a two-dimensional grid of dimensions 12x12.
 In the picture below you can see the two starting positions (one of which is near the entrance of the *shortcut*), along with the goal position.
 
-![default environment](https://github.com/Josef-Hlink/ShortCut/blob/main/env.png?raw=true)
+![default environment](https://github.com/Josef-Hlink/ShortCut/blob/main/supplementary/env.png?raw=true)
 
 The `X`'s represent cliffs (with very negative rewards associated with them), the black squares represent the starting positions, and the white square represents the goal position.
