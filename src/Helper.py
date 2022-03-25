@@ -78,7 +78,7 @@ class PathPlot:
             self.ax.set_title(title)
     
     def add_Q_values(self, Qvalues: np.array):
-        self.ax.imshow(Qvalues, cmap='hot', interpolation='none')
+        self.ax.imshow(Qvalues, cmap='bone', interpolation='none')
 
     def add_starting_positions(self, x: list[int], y: list[list[int]]):
         self.ax.scatter(x, y, marker="o", s=100, c="black", edgecolor='white', label='starting points')
