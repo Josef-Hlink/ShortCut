@@ -68,8 +68,8 @@ class ComparisonPlot:
 class PathPlot:
     def __init__(self, title=None):
         self.fig,self.ax = plt.subplots()
-        self.ax.set_xlabel('col nr.')
-        self.ax.set_ylabel('row nr.')
+        self.ax.set_xlabel('column')
+        self.ax.set_ylabel('row')
         labelrange = [i for i in range(12)]
         self.ax.set_xticks(ticks=labelrange, labels=labelrange)
         self.ax.set_yticks(ticks=labelrange, labels=labelrange)
@@ -81,22 +81,30 @@ class PathPlot:
         self.ax.imshow(Qvalues, cmap='bone', interpolation='none')
 
     def add_starting_positions(self, x: list[int], y: list[list[int]]):
-        self.ax.scatter(x, y, marker="o", s=100, c="black", edgecolor='white', label='starting points')
+        self.ax.scatter(x, y, marker="o", s=100, c="black", edgecolor='white', label='starting pos.')
 
     def add_goal_position(self, x: int, y: int):
-        self.ax.scatter(x, y, marker="o", s=100, c="white", edgecolor='black', label='end point')
+        self.ax.scatter(x, y, marker="o", s=100, c="white", edgecolor='black', label='goal pos.')
 
     def add_cliffs(self, x: list[list[int]], y: list[list[int]]):
         self.ax.scatter(x, y, marker="x", s=100, c="black", label='cliffs')
     
-    def add_path(self, x: list[list[int]], y: list[list[int]], path_nr: int = 1):
-        if path_nr == 1:
-            self.ax.scatter(x, y, marker=(4,1,0), s=100, c="black", label='path 1')
-        elif path_nr == 2:
-            self.ax.scatter(x, y, marker=(4,1,45), s=100, c="black", label='path 2')
+    def add_path(self, x: list[int], y: list[int], actions: list[int], path_nr: int = 1):
+        x, y = np.array(x), np.array(y)
+        actions = np.array(actions)
+        get_marker = {0: '^', 1: 'v', 2: '<', 3: '>'}
+        unique_actions = np.unique(actions)
+        
+        for u_a in unique_actions:
+            mask = actions == u_a
+            l = f'path {path_nr}' if u_a == 3 else ''
+            if path_nr == 1:
+                self.ax.scatter(x[mask], y[mask], marker=get_marker[u_a], s=100, c='violet', edgecolors='magenta', alpha=0.3, label=l)
+            elif path_nr == 2:
+                self.ax.scatter(x[mask], y[mask], marker=get_marker[u_a], s=100, c='skyblue', edgecolors='teal', alpha=0.3, label=l)
 
     def save(self, name: str = 'test.png'):
-        self.ax.legend(loc=1, ncol=2, prop={'size': 8})
+        self.ax.legend(loc=4, markerscale=0.6, prop={'size': 6})
         self.fig.savefig(name,dpi=300)
 
 def smooth(y, window, poly=1):
