@@ -9,16 +9,17 @@ Template provided by: Thomas Moerland
 Implementation by: Josef Hamelink & Ayush Kandhai
 """
 
-import os, shutil                   # directory management 
+import os                           # directory management 
 import numpy as np                  # arrays
 import time                         # calculating runtime
 from datetime import datetime       # time that the experiment has started
-from Helper import LearningCurvePlot, PathPlot, progress
+from Helper import LearningCurvePlot, PathPlot, fix_directories, progress
 from ShortCutAgents import Agent, QLearningAgent, SARSAAgent, ExpectedSARSAAgent
 from ShortCutEnvironment import Environment, ShortcutEnvironment, WindyShortcutEnvironment
 
 def main():
-    fix_directories()
+    global RESULTSPATH
+    RESULTSPATH = fix_directories()
 
     start: float = time.perf_counter()              # <-- timer start
     print(f'\nStarting experiment at {datetime.now().strftime("%H:%M:%S")}')
@@ -32,24 +33,6 @@ def main():
     seconds: float = round((end-start) % 60, 1)
     stringtime: str = f'{minutes}:{str(seconds).zfill(4)} min' if minutes else f'{seconds} sec'
     print(f'\nExperiment finished in {stringtime}\n')
-
-def fix_directories() -> None:
-    """Make sure the current working directory is `src` and an empty `results` directory is present at the same level as `src`"""
-    cwd = os.getcwd()
-    if cwd.split(os.sep)[-1] != 'src':
-        if not os.path.exists(os.path.join(cwd, 'src')):
-            raise FileNotFoundError('Please work from either the parent directory "ShortCut" or directly from "src".')
-        os.chdir(os.path.join(cwd, 'src'))
-        cwd = os.getcwd()
-        print(f'Working directory changed to "{cwd}"')
-
-    global RESULTSPATH
-    RESULTSPATH = os.path.join('..', 'results')
-     
-    if os.path.exists(RESULTSPATH):
-        shutil.rmtree(RESULTSPATH)
-    os.mkdir(RESULTSPATH)
-    return
 
 class Experiment:
     def __init__(self, n_states: int = 144, n_actions: int = 4, n_episodes: int = 1000, n_repetitions: int = 1,
@@ -170,6 +153,46 @@ def run_greedy_episode(env: Environment, agent: Agent, start_at: tuple[int] = (2
     a_p.pop(0)  # and first action
     return x_p, y_p, a_p
 
+def run_experiments_for_agent(agent_type: object) -> None:
+    """
+    Main function that handles all three experiments for every one of the three agent types
+    ---
+    param:
+        - agent_type: the type of agent that will be used for the three experiments
+    """
+    # rename parameter for grammatical reasons
+    newAgent = agent_type
+    agent: Agent = newAgent()
+
+    # print formatted string to indicate what agent is being experimented with
+    print(f'\n\033[1m---{agent.lname}---\033[0m')
+
+    print('Running for pathplots...')
+    # Path Plots
+    environments = [ShortcutEnvironment, WindyShortcutEnvironment]
+    for index, environment in enumerate(environments):
+        exp = Experiment(n_states=144, n_actions=4, n_episodes = 10_000, n_repetitions = 1, epsilon = 0.1, alpha = 0.1)
+        trainedAgent: Agent = exp(environment, newAgent)
+        trainedAgent.epsilon = 0.0          # make the agent perform a greedy run
+        path1 = run_greedy_episode(environment(), trainedAgent, start_at=(2,2))
+        path2 = run_greedy_episode(environment(), trainedAgent, start_at=(9,2))
+
+        path_plot(trainedAgent, path1, path2, windy=index)  # param windy takes a bool, so index 0 will amount to False and 1 to True
+        progress(index, 2)
+
+    # Learning Curves
+    rewards_for_alpha: dict[float: np.array] = {0.01: None, 0.1: None, 0.5: None, 0.9: None}
+    for alpha in rewards_for_alpha.keys():
+        print(f'Running 100 repetitions for {alpha = }...')
+        exp = Experiment(n_states=144, n_actions=4, n_episodes = 1000, n_repetitions=100, epsilon = 0.1, alpha=alpha)
+        rewards_for_alpha[alpha] = exp(ShortcutEnvironment, newAgent)
+    
+    plot = LearningCurvePlot(title = f'Learning Curve ({agent.lname})')
+    for index, (alpha, rewards) in enumerate(rewards_for_alpha.items()):
+        plot.add_curve(y = rewards, color_index = index, label = f'α = {alpha}')
+    plot.save(name = os.path.join(RESULTSPATH, f'lc{agent.sname}.png'))
+    return
+
 def path_plot(agent: Agent, path1, path2, windy=False) -> None:
     """
     Get all relevant data and create an instance of  Helper.py's `PathPlot`
@@ -209,53 +232,6 @@ def path_plot(agent: Agent, path1, path2, windy=False) -> None:
 
     char = 'w' if windy else ''
     plot.save(name = os.path.join(RESULTSPATH, f'{char}pp{agent.sname}.png'))
-    return
-
-def run_experiments_for_agent(agent_type: object) -> None:
-    """
-    Main function that handles all three experiments for every one of the three agent types
-    ---
-    param:
-        - agent_type: the type of agent that will be used for the three experiments
-    """
-    # rename parameter for grammatical reasons
-    newAgent = agent_type
-    agent: Agent = newAgent()
-
-    print(f'\n\033[1m---{agent.lname}---\033[0m')
-    print('Running for pathplots...')
-
-    # Heatmap Normal Environment
-    exp = Experiment(n_states=144, n_actions=4, n_episodes = 10_000, n_repetitions = 1, epsilon = 0.1, alpha = 0.1)
-    trainedAgent: Agent = exp(ShortcutEnvironment, newAgent)
-    trainedAgent.epsilon = 0.0          # make the agent perform a greedy run
-    path1 = run_greedy_episode(ShortcutEnvironment(), trainedAgent, start_at=(2,2))
-    path2 = run_greedy_episode(ShortcutEnvironment(), trainedAgent, start_at=(9,2))
-
-    path_plot(trainedAgent, path1, path2)
-    progress(0, 2)
-
-    # Heatmap Windy Environment
-    exp = Experiment(n_states=144, n_actions=4, n_episodes = 10_000, n_repetitions = 1, epsilon = 0.1, alpha = 0.1)
-    trainedAgent: Agent = exp(WindyShortcutEnvironment, newAgent)
-    trainedAgent.epsilon = 0.0          # make the agent perform a greedy run
-    path1 = run_greedy_episode(WindyShortcutEnvironment(), trainedAgent, start_at=(2,2))
-    path2 = run_greedy_episode(WindyShortcutEnvironment(), trainedAgent, start_at=(9,2))
-
-    path_plot(trainedAgent, path1, path2, windy=True)
-    progress(1, 2)
-
-    # Learning Curves
-    rewards_for_alpha: dict[float: np.array] = {0.01: None, 0.1: None, 0.5: None, 0.9: None}
-    for alpha in rewards_for_alpha.keys():
-        print(f'Running 100 repetitions for {alpha = }...')
-        exp = Experiment(n_states=144, n_actions=4, n_episodes = 1000, n_repetitions=100, epsilon = 0.1, alpha=alpha)
-        rewards_for_alpha[alpha] = exp(ShortcutEnvironment, newAgent)
-    
-    plot = LearningCurvePlot(title = f'Learning Curve ({agent.lname})')
-    for index, (alpha, rewards) in enumerate(rewards_for_alpha.items()):
-        plot.add_curve(y = rewards, color_index = index, label = f'α = {alpha}')
-    plot.save(name = os.path.join(RESULTSPATH, f'lc{agent.sname}.png'))
     return
 
 if __name__ == '__main__':
