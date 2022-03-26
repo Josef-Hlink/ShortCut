@@ -18,7 +18,8 @@ The only functional difference between the agents is how they update their Q-val
 While Q-Learning is _off-policy_, both SARSA and Expected SARSA (ESARSA) are examples of _on-policy_ models.
 
 ### Q-Learning
-<img src='https://github.com/Josef-Hlink/ShortCut/blob/main/supplementary/QL-pseudo.png' alt='Pseudo code for Q Learning algorithm' height='240'>
+<img src='https://github.com/Josef-Hlink/ShortCut/blob/main/supplementary/QL-pseudo.png' alt='Pseudo code for Q Learning algorithm' height='240'></img>
+
 In the image above you can see the pseudocode for a general Q-Learning algorithm.
 This image was taken from Sutton & Barto's 2018 book: _Reinforcement Learning: An Introduction_.
 An incomplete, but still extremely nice free version can be found at http://incompleteideas.net/book/the-book.html.
