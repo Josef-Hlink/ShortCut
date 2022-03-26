@@ -131,6 +131,5 @@ dmypy.json
 # Plots
 *.png
 
-# Image for README
-!env.png
-
+# Images for README
+!supplementary/*
