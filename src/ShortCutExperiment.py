@@ -62,16 +62,16 @@ def run_experiments_for_agent(agent_type: object) -> None:
         progress(index, 2)
 
     # Learning Curves
-    # rewards_for_alpha: dict[float: np.array] = {0.01: None, 0.1: None, 0.5: None, 0.9: None}
-    # for alpha in rewards_for_alpha.keys():
-    #     print(f'Running 100 repetitions for {alpha = }...')
-    #     exp = Experiment(n_states=144, n_actions=4, n_episodes = 1000, n_repetitions=100, epsilon = 0.1, alpha=alpha)
-    #     rewards_for_alpha[alpha] = exp(ShortcutEnvironment, newAgent)
+    rewards_for_alpha: dict[float: np.array] = {0.01: None, 0.1: None, 0.5: None, 0.9: None}
+    for alpha in rewards_for_alpha.keys():
+        print(f'Running 100 repetitions for {alpha = }...')
+        exp = Experiment(n_states=144, n_actions=4, n_episodes = 1000, n_repetitions=100, epsilon = 0.1, alpha=alpha)
+        rewards_for_alpha[alpha] = exp(ShortcutEnvironment, newAgent)
     
-    # plot = LearningCurvePlot(title = f'Learning Curve ({agent.lname})')
-    # for index, (alpha, rewards) in enumerate(rewards_for_alpha.items()):
-    #     plot.add_curve(y = rewards, color_index = index, label = f'α = {alpha}')
-    # plot.save(name = os.path.join(RESULTSPATH, f'lc{agent.sname}.png'))
+    plot = LearningCurvePlot(title = f'Learning Curve ({agent.lname})')
+    for index, (alpha, rewards) in enumerate(rewards_for_alpha.items()):
+        plot.add_curve(y = rewards, color_index = index, label = f'α = {alpha}')
+    plot.save(name = os.path.join(RESULTSPATH, f'lc{agent.sname}.png'))
     return
 
 class Experiment:
