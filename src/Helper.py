@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Bandit environment
+ShortCut helper
 Practical for course 'Reinforcement Learning',
 Bachelor AI, Leiden University, The Netherlands
 2022
@@ -50,7 +50,7 @@ class PathPlot:
             self.ax.set_title(title)
     
     def add_Q_values(self, Qvalues: np.array):
-        self.ax.imshow(Qvalues, cmap='bone', interpolation='none')
+        self.ax.imshow(Qvalues, cmap='gist_gray', interpolation='none')
 
     def add_starting_positions(self, x: list[int], y: list[list[int]]):
         self.ax.scatter(x, y, marker="o", s=100, c="black", edgecolor='white', label='starting pos.')

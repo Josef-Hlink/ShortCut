@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-ShortCut environment
+ShortCut agents
 Practical for course 'Reinforcement Learning',
 Bachelor AI, Leiden University, The Netherlands
 2022
