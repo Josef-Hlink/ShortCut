@@ -19,7 +19,7 @@ class LearningCurvePlot:
         self.fig,self.ax = plt.subplots()
         self.ax.set_xlabel('Episode')
         self.ax.set_ylabel('Cumulative reward')
-        #self.ax.set_ylim([-5000,0])
+        self.ax.set_ylim([-1500,0])
         self.colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:cyan'] # color cycle
         if title is not None:
             self.ax.set_title(title)
